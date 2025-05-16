@@ -1,4 +1,4 @@
-package com.example.oralenglishgpt.ui
+package com.example.oralenglishgpt.viewModel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel

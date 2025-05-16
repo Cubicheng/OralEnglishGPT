@@ -2,4 +2,26 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- 浅色主题颜色 -->
+    <color name="light_primary">#9575CD</color>
+    <color name="light_secondary">#03DAC6</color>
+    <color name="light_tertiary">#018786</color>
+    <color name="light_background">#FFFFFF</color>
+    <color name="light_surface">#FFFFFF</color>
+    <color name="light_onPrimary">#FFFFFF</color>
+    <color name="light_onSecondary">#000000</color>
+    <color name="light_onBackground">#000000</color>
+    <color name="light_onSurface">#000000</color>
+
+    <!-- 深色主题颜色 -->
+    <color name="dark_primary">#BB86FC</color>
+    <color name="dark_secondary">#03DAC6</color>
+    <color name="dark_tertiary">#3700B3</color>
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+    <color name="dark_onPrimary">#000000</color>
+    <color name="dark_onSecondary">#000000</color>
+    <color name="dark_onBackground">#FFFFFF</color>
+    <color name="dark_onSurface">#FFFFFF</color>
 </resources>

@@ -23,7 +23,7 @@ fun ConversationHistoryDrawer(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
             .width(280.dp)
             .padding(16.dp)
     ) {
