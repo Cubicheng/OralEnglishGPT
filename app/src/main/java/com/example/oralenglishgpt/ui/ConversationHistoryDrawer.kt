@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import com.example.oralenglishgpt.api.Conversation
 import com.example.oralenglishgpt.viewModel.ChatViewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun ConversationHistoryDrawer(
@@ -28,6 +30,7 @@ fun ConversationHistoryDrawer(
 ) {
     // 添加对话框状态监听
     val showDeleteDialog by viewModel.showDeleteDialog
+    val scope = rememberCoroutineScope()
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -36,7 +39,11 @@ fun ConversationHistoryDrawer(
             text = { Text("Sure to delete?") },
             confirmButton = {
                 TextButton(
-                    onClick = { viewModel.confirmDelete() }
+                    onClick = {
+                        scope.launch {
+                            viewModel.confirmDelete()
+                        }
+                    }
                 ) {
                     Text("Delete", color = MaterialTheme.colorScheme.error)
                 }

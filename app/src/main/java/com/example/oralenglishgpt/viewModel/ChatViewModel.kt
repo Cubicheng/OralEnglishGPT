@@ -17,8 +17,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import androidx.compose.runtime.State
+import com.example.oralenglishgpt.database.AppDatabase
+import com.example.oralenglishgpt.database.entity.ConversationEntity
+import com.example.oralenglishgpt.database.entity.MessageEntity
+import kotlinx.coroutines.flow.first
 
-class ChatViewModel(private val apiKey: String) : ViewModel() {
+class ChatViewModel(
+    private val apiKey: String,
+    private val database: AppDatabase
+) : ViewModel() {
+    private val chatDao = database.chatDao()
     // 当前对话消息
     private val _messages = mutableStateListOf<Message>()
     val messages: List<Message> = _messages
@@ -41,6 +49,39 @@ class ChatViewModel(private val apiKey: String) : ViewModel() {
 
     private val _conversationToDelete = mutableStateOf<String?>(null)
 
+    init{
+        loadAllConversations()
+    }
+
+    private fun loadAllConversations() {
+        viewModelScope.launch {
+            try {
+                val conversationEntities = chatDao.getAllConversations().first()
+
+                _conversations.clear()
+                conversationEntities.forEach { entity ->
+                    val messages = chatDao.getMessagesByConversation(entity.id)
+                        .first()
+                        .map { Message(it.role, it.content) }
+
+                    _conversations.add(
+                        Conversation(
+                            id = entity.id,
+                            title = entity.title,
+                            messages = messages,
+                            lastModified = entity.lastModified
+                        )
+                    )
+                }
+                // 按时间降序排序
+                _conversations.sortByDescending { it.lastModified }
+                Log.d("ChatVM", "初始加载完成，对话数: ${_conversations.size}")
+            } catch (e: Exception) {
+                Log.e("ChatVM", "加载对话失败", e)
+            }
+        }
+    }
+
     // 打开删除确认对话框
     fun showDeleteConfirmation(conversationId: String) {
         _conversationToDelete.value = conversationId
@@ -54,7 +95,7 @@ class ChatViewModel(private val apiKey: String) : ViewModel() {
     }
 
     // 确认删除
-    fun confirmDelete() {
+    suspend fun confirmDelete() {
         _conversationToDelete.value?.let { conversationId ->
             deleteConversation(conversationId)
         }
@@ -63,7 +104,7 @@ class ChatViewModel(private val apiKey: String) : ViewModel() {
     }
 
     // 创建新对话
-    fun newConversation() {
+    suspend fun newConversation() {
         if (messages.isNotEmpty()) {
             saveCurrentConversation()
         }
@@ -74,7 +115,7 @@ class ChatViewModel(private val apiKey: String) : ViewModel() {
     }
 
     // 保存当前对话到历史记录
-    private fun saveCurrentConversation() {
+    private suspend fun saveCurrentConversation() {
         if (_messages.isEmpty()) {
             Log.d("ChatVM", "当前对话无消息，跳过保存")
             return
@@ -83,13 +124,37 @@ class ChatViewModel(private val apiKey: String) : ViewModel() {
         val existingIndex = _conversations.indexOfFirst { it.id == currentConversationId }
 
         val title = generateConversationTitle(_messages)
+        val lastModified = System.currentTimeMillis()
+
+        // 数据库操作
+        chatDao.insertConversation(
+            ConversationEntity(
+                id = currentConversationId,
+                title = title,
+                lastModified = lastModified
+            )
+        )
+
+        // 先删除旧消息再插入新消息，避免重复
+        chatDao.deleteMessagesByConversation(currentConversationId)
+        _messages.forEach { message ->
+            chatDao.insertMessage(
+                MessageEntity(
+                    conversationId = currentConversationId,
+                    role = message.role,
+                    content = message.content
+                )
+            )
+        }
 
         val currentConversation = Conversation(
             id = currentConversationId,
             title = title,
             messages = _messages.toList(),
-            lastModified = System.currentTimeMillis()
+            lastModified = lastModified
         )
+
+        Log.d("ChatVM", _conversations.size.toString())
 
         if (existingIndex >= 0) {
             _conversations[existingIndex] = currentConversation
@@ -108,7 +173,7 @@ class ChatViewModel(private val apiKey: String) : ViewModel() {
     }
 
     // 加载历史对话
-    fun loadConversation(conversationId: String) {
+    suspend fun loadConversation(conversationId: String) {
         if (_messages.isNotEmpty()) {
             saveCurrentConversation()
         }
@@ -119,19 +184,21 @@ class ChatViewModel(private val apiKey: String) : ViewModel() {
         }
     }
 
-    fun deleteConversation(conversationId: String) {
-        val index = _conversations.indexOfFirst { it.id == conversationId }
-        if (index >= 0) {
-            _conversations.removeAt(index)
-            Log.d("ChatVM", "删除历史对话: ${conversationId}")
-            if(conversationId==currentConversationId){
+    suspend fun deleteConversation(conversationId: String) {
+        viewModelScope.launch {
+            chatDao.deleteMessagesByConversation(conversationId)
+            chatDao.deleteConversation(conversationId)
+
+            _conversations.removeAll { it.id == conversationId }
+
+            if (conversationId == currentConversationId) {
                 _messages.clear()
                 newConversation()
             }
         }
     }
 
-    fun sendMessage(text: String) {
+    suspend fun sendMessage(text: String) {
         // 添加用户消息
         if (_messages.size >= 6) {  // 保留最近3轮（user+assistant各一条）
             _messages.removeRange(0, 2)  // 删除最旧的一对QA

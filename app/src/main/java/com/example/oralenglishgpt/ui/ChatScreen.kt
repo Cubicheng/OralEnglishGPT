@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.oralenglishgpt.database.AppDatabase
 import com.example.oralenglishgpt.viewModel.ChatViewModel
 import com.example.oralenglishgpt.viewModel.ChatViewModelFactory
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatScreen() {
     val viewModel: ChatViewModel = viewModel(
-        factory = ChatViewModelFactory(LocalContext.current)
+        factory = ChatViewModelFactory(LocalContext.current, AppDatabase.getDatabase(LocalContext.current))
     )
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -32,12 +33,16 @@ fun ChatScreen() {
             ConversationHistoryDrawer(
                 conversations = viewModel.conversations,
                 onConversationSelected = { id ->
-                    viewModel.loadConversation(id)
-                    scope.launch { drawerState.close() }
+                    scope.launch {
+                        viewModel.loadConversation(id)
+                        drawerState.close()
+                    }
                 },
                 onNewConversation = {
-                    viewModel.newConversation()
-                    scope.launch { drawerState.close() }
+                    scope.launch {
+                        viewModel.newConversation()
+                        drawerState.close()
+                    }
                 },
                 selectedConversationId = viewModel.currentConversationId,
                 viewModel = viewModel
@@ -94,8 +99,10 @@ fun ChatScreen() {
                         Button(
                             onClick = {
                                 if (inputText.isNotBlank()) {
-                                    viewModel.sendMessage(inputText)
-                                    inputText = ""
+                                    scope.launch { // 在协程中调用挂起函数
+                                        viewModel.sendMessage(inputText)
+                                        inputText = ""
+                                    }
                                 }
                             }
                         ) {

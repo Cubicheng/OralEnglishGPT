@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
 }
 
 android {
@@ -68,4 +69,9 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     implementation(libs.accompanist.systemuicontroller)
+
+    val roomVersion = "2.6.1"
+    implementation(libs.androidx.room.runtime)
+    kapt("androidx.room:room-compiler:$roomVersion") // Kotlin 注解处理器
+    implementation("androidx.room:room-ktx:$roomVersion") // Kotlin 扩展和协程支持
 }
