@@ -30,7 +30,7 @@ fun ChatScreen() {
         drawerState = drawerState,
         drawerContent = {
             ConversationHistoryDrawer(
-                conversations = viewModel.sortedConversations,
+                conversations = viewModel.conversations,
                 onConversationSelected = { id ->
                     viewModel.loadConversation(id)
                     scope.launch { drawerState.close() }
@@ -39,7 +39,8 @@ fun ChatScreen() {
                     viewModel.newConversation()
                     scope.launch { drawerState.close() }
                 },
-                selectedConversationId = viewModel.currentConversationId
+                selectedConversationId = viewModel.currentConversationId,
+                viewModel = viewModel
             )
         }
     ) {
