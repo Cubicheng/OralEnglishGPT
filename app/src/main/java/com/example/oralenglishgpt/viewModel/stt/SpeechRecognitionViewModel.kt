@@ -2,6 +2,7 @@ package com.example.oralenglishgpt.viewModel.stt
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -38,6 +39,9 @@ class SpeechRecognitionViewModel : ViewModel() {
     private val language = "zh_cn" // 识别语言
     private val resultType = "json" // 结果内容数据格式
 
+    // 新增回调，用于在识别完成后发送消息
+    var onSendMessage: ((String) -> Unit)? = null
+
     // 初始化监听器
     private val mInitListener = InitListener { code ->
         Log.d("SpeechRecognition", "SpeechRecognizer init() code = $code")
@@ -48,13 +52,29 @@ class SpeechRecognitionViewModel : ViewModel() {
         }
     }
 
-    // 听写UI监听器
-    private val mRecognizerDialogListener = object : RecognizerDialogListener {
+    private val mRecognizerListener = object : RecognizerListener {
+        override fun onVolumeChanged(volume: Int, data: ByteArray?) {
+            // 可以处理音量变化
+        }
+
+        override fun onBeginOfSpeech() {
+            // 开始说话
+        }
+
+        override fun onEndOfSpeech() {
+            // 结束说话
+        }
+
         override fun onResult(results: RecognizerResult?, isLast: Boolean) {
             results?.let { printResult(it) }
             if (isLast) {
                 viewModelScope.launch {
                     _isRecognizing.value = false
+                    // 直接调用发送逻辑
+                    if (_recognitionResult.value.isNotBlank()) {
+                        onSendMessage?.invoke(_recognitionResult.value)
+                        _recognitionResult.value = "" // 清空结果，避免重复发送
+                    }
                 }
             }
         }
@@ -63,9 +83,13 @@ class SpeechRecognitionViewModel : ViewModel() {
             error?.let {
                 viewModelScope.launch {
                     _errorMessage.value = it.getPlainDescription(true)
-                    _isRecognizing.value = false // 出错时也重置状态
+                    _isRecognizing.value = false
                 }
             }
+        }
+
+        override fun onEvent(p0: Int, p1: Int, p2: Int, p3: Bundle?) {
+
         }
     }
 
@@ -74,9 +98,6 @@ class SpeechRecognitionViewModel : ViewModel() {
 
         // 使用SpeechRecognizer对象
         mIat = SpeechRecognizer.createRecognizer(context, mInitListener)
-
-        // 使用UI听写功能
-        mIatDialog = RecognizerDialog(context, mInitListener)
     }
 
     fun startRecognition() {
@@ -91,8 +112,7 @@ class SpeechRecognitionViewModel : ViewModel() {
 
             mIatResults.clear() // 清除数据
             setParam() // 设置参数
-            mIatDialog?.setListener(mRecognizerDialogListener) // 设置监听
-            mIatDialog?.show() // 显示对话框
+            recognizer.startListening(mRecognizerListener)
         } ?: run {
             viewModelScope.launch {
                 _errorMessage.value = "创建对象失败，请确认 libmsc.so 放置正确，且有调用 createUtility 进行初始化"
@@ -183,5 +203,9 @@ class SpeechRecognitionViewModel : ViewModel() {
             it.destroy()
         }
         _isRecognizing.value = false
+    }
+
+    fun clearRecognitionResult() {
+        _recognitionResult.value = ""
     }
 }

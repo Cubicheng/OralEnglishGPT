@@ -5,7 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.Surface
 import com.example.oralenglishgpt.theme.MainTheme
-import com.example.oralenglishgpt.ui.SpeechRecognitionScreen
+import com.example.oralenglishgpt.ui.ChatScreen
 import com.iflytek.cloud.SpeechConstant
 import com.iflytek.cloud.SpeechUtility
 
@@ -19,8 +19,8 @@ class MainActivity : AppCompatActivity() {
         setContent {
             MainTheme {
                 Surface {
-//                    ChatScreen()
-                    SpeechRecognitionScreen();
+                    ChatScreen()
+//                    SpeechRecognitionScreen();
                 }
             }
         }

@@ -16,15 +16,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.oralenglishgpt.database.AppDatabase
 import com.example.oralenglishgpt.viewModel.ChatViewModel
 import com.example.oralenglishgpt.viewModel.ChatViewModelFactory
+import com.example.oralenglishgpt.viewModel.stt.SpeechRecognitionViewModel
 import com.example.oralenglishgpt.viewModel.tts.TTSViewModel
 import com.example.oralenglishgpt.viewModel.tts.TTSViewModelFactory
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen() {
     val context = LocalContext.current
-    val viewModel: ChatViewModel = viewModel(
+    val sttViewModel: SpeechRecognitionViewModel = viewModel()
+    val chatViewModel: ChatViewModel = viewModel(
         factory = ChatViewModelFactory(context, AppDatabase.getDatabase(LocalContext.current))
     )
     val ttsViewModel: TTSViewModel = viewModel(
@@ -34,25 +37,34 @@ fun ChatScreen() {
     val scope = rememberCoroutineScope()
     var inputText by remember { mutableStateOf("") }
 
+    // 设置语音识别后的发送逻辑
+    sttViewModel.onSendMessage = { recognizedText ->
+        scope.launch {
+            if (recognizedText.isNotBlank()) {
+                chatViewModel.sendMessage(recognizedText)
+            }
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ConversationHistoryDrawer(
-                conversations = viewModel.conversations,
+                conversations = chatViewModel.conversations,
                 onConversationSelected = { id ->
                     scope.launch {
-                        viewModel.loadConversation(id)
+                        chatViewModel.loadConversation(id)
                         drawerState.close()
                     }
                 },
                 onNewConversation = {
                     scope.launch {
-                        viewModel.newConversation()
+                        chatViewModel.newConversation()
                         drawerState.close()
                     }
                 },
-                selectedConversationId = viewModel.currentConversationId,
-                viewModel = viewModel
+                selectedConversationId = chatViewModel.currentConversationId,
+                viewModel = chatViewModel
             )
         }
     ) {
@@ -81,7 +93,7 @@ fun ChatScreen() {
                         modifier = Modifier.weight(1f),
                         reverseLayout = true
                     ) {
-                        items(viewModel.messages.reversed()) { message ->
+                        items(chatViewModel.messages.reversed()) { message ->
                             MessageBubble(
                                 text = message.content,
                                 isUser = message.role == "user",
@@ -104,11 +116,13 @@ fun ChatScreen() {
 
                         Spacer(Modifier.width(8.dp))
 
+                        SpeechRecognitionButton(viewModel = sttViewModel)
+
                         Button(
                             onClick = {
                                 if (inputText.isNotBlank()) {
                                     scope.launch { // 在协程中调用挂起函数
-                                        viewModel.sendMessage(inputText)
+                                        chatViewModel.sendMessage(inputText)
                                         inputText = ""
                                     }
                                 }
@@ -120,55 +134,5 @@ fun ChatScreen() {
                 }
             }
         )
-    }
-}
-@Composable
-fun MessageBubble(
-    text: String,
-    isUser: Boolean,
-    ttsViewModel: TTSViewModel // 新增参数
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(0.9f), // 限制卡片宽度（留白更美观）
-            colors = CardDefaults.cardColors(
-                containerColor = if (isUser)
-                    MaterialTheme.colorScheme.primaryContainer
-                else
-                    MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Text(
-                text = text,
-                modifier = Modifier.padding(12.dp),
-                color = if (isUser)
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                else
-                    MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        // 播放按钮（仅AI消息显示，居左对齐）
-        if (!isUser) {
-            IconButton(
-                onClick = { ttsViewModel.speak(text) },
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .size(36.dp) // 稍小的按钮
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.PlayArrow,
-                    contentDescription = "朗读",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp) // 更精致的图标大小
-                )
-            }
-        }
     }
 }
