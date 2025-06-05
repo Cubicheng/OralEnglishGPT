@@ -71,6 +71,7 @@ fun SpeechRecognitionButton(
             }
         },
         enabled = !isRecognizing,
+        modifier = modifier.fillMaxWidth()
     ) {
         if (isRecognizing) {
             CircularProgressIndicator(
@@ -78,9 +79,15 @@ fun SpeechRecognitionButton(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("识别中...")
+            Text(
+                "Speaking...",
+                style = MaterialTheme.typography.bodyLarge
+            )
         } else {
-            Text("开始语音识别")
+            Text(
+                "Press to talk",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }

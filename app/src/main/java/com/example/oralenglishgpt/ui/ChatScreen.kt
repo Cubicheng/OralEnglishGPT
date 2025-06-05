@@ -11,6 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.oralenglishgpt.database.AppDatabase
@@ -35,7 +37,6 @@ fun ChatScreen() {
     )
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var inputText by remember { mutableStateOf("") }
 
     // 设置语音识别后的发送逻辑
     sttViewModel.onSendMessage = { recognizedText ->
@@ -74,7 +75,9 @@ fun ChatScreen() {
                     title = { Text("OralEnglishGPT") },
                     navigationIcon = {
                         IconButton(
-                            onClick = { scope.launch { drawerState.open() } }
+                            onClick = { scope.launch {
+                                drawerState.open()
+                            } }
                         ) {
                             Icon(Icons.Default.Menu, contentDescription = "菜单")
                         }
@@ -102,35 +105,14 @@ fun ChatScreen() {
                         }
                     }
 
-                    // 输入框
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        TextField(
-                            value = inputText,
-                            onValueChange = { inputText = it },
-                            modifier = Modifier.weight(1f),
-                            placeholder = { Text("Input text...") }
-                        )
-
-                        Spacer(Modifier.width(8.dp))
-
-                        SpeechRecognitionButton(viewModel = sttViewModel)
-
-                        Button(
-                            onClick = {
-                                if (inputText.isNotBlank()) {
-                                    scope.launch { // 在协程中调用挂起函数
-                                        chatViewModel.sendMessage(inputText)
-                                        inputText = ""
-                                    }
-                                }
+                    InputArea(
+                        sttViewModel = sttViewModel,
+                        onSendMessage = { text ->
+                            scope.launch {
+                                chatViewModel.sendMessage(text)
                             }
-                        ) {
-                            Text("Send")
                         }
-                    }
+                    )
                 }
             }
         )

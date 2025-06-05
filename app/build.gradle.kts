@@ -48,7 +48,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            jniLibs.srcDirs("libs")
+            jniLibs.srcDirs("libs/stt")
         }
     }
 }
@@ -64,7 +64,7 @@ dependencies {
     implementation(libs.androidx.storage)
     implementation(libs.androidx.foundation.android)
     implementation(libs.androidx.material3.android)
-    implementation(files("libs\\Msc.jar"))
+    implementation(files("libs\\stt\\Msc.jar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
