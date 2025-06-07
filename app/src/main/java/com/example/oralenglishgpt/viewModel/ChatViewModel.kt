@@ -17,12 +17,16 @@ import androidx.compose.runtime.State
 import com.example.oralenglishgpt.database.AppDatabase
 import com.example.oralenglishgpt.database.entity.ConversationEntity
 import com.example.oralenglishgpt.database.entity.MessageEntity
+import com.example.oralenglishgpt.database.entity.SettingsEntity
+import com.example.oralenglishgpt.viewModel.tts.TTSViewModel
 import kotlinx.coroutines.flow.first
 
 class ChatViewModel(
     private val apiKey: String,
     private val database: AppDatabase
 ) : ViewModel() {
+    var ttsViewModel: TTSViewModel? = null
+
     private val chatDao = database.chatDao()
     // 当前对话消息
     private val _messages = mutableStateListOf<Message>()
@@ -40,18 +44,33 @@ class ChatViewModel(
 
     private val api = ApiClient.instance
 
+    private val _isGeneratingResponse = mutableStateOf(false)
+    val isGeneratingResponse: State<Boolean> = _isGeneratingResponse
+
     // 添加对话框状态
     private val _showDeleteDialog = mutableStateOf(false)
     val showDeleteDialog: State<Boolean> = _showDeleteDialog
 
     private val _conversationToDelete = mutableStateOf<String?>(null)
 
+    val autoPlay = mutableStateOf(false)
+
     init{
-        loadAllConversations()
+        loadAllConversationsAndSettings()
     }
 
-    private fun loadAllConversations() {
+    fun toggleAutoPlay() {
         viewModelScope.launch {
+            autoPlay.value = !autoPlay.value
+            database.settingsDao().setAutoPlaySetting(
+                SettingsEntity("auto_play", autoPlay.value.toString())
+            )
+        }
+    }
+
+    private fun loadAllConversationsAndSettings() {
+        viewModelScope.launch {
+            autoPlay.value = database.settingsDao().getAutoPlaySetting()?.toBoolean() ?: false
             try {
                 val conversationEntities = chatDao.getAllConversations().first()
 
@@ -204,6 +223,8 @@ class ChatViewModel(
 
         saveCurrentConversation()
 
+        _isGeneratingResponse.value = true
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = api.chatCompletion(
@@ -219,6 +240,11 @@ class ChatViewModel(
                     _messages.add(aiMessage)
                     Log.d("ChatVM", "AI回复: ${aiMessage.content}")
                     saveCurrentConversation()
+
+                    // 自动播放逻辑
+                    if (autoPlay.value) {
+                        ttsViewModel?.speak(aiMessage.content)
+                    }
                 }
 
             } catch (e: Exception) {
@@ -227,6 +253,10 @@ class ChatViewModel(
                     saveCurrentConversation()
                 }
                 Log.e("API", "网络错误: ${e.message}")
+            }finally {
+                withContext(Dispatchers.Main) {
+                    _isGeneratingResponse.value = false
+                }
             }
         }
     }

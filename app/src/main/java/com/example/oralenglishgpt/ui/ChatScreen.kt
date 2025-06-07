@@ -3,8 +3,6 @@ package com.example.oralenglishgpt.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -42,6 +40,10 @@ fun ChatScreen() {
         }
     }
 
+    LaunchedEffect(ttsViewModel) {
+        chatViewModel.ttsViewModel = ttsViewModel
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -66,16 +68,12 @@ fun ChatScreen() {
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("OralEnglishGPT") },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { scope.launch {
-                                drawerState.open()
-                            } }
-                        ) {
-                            Icon(Icons.Default.Menu, contentDescription = "菜单")
-                        }
+                ChatTopBar(
+                    scope = scope,
+                    drawerState = drawerState,
+                    autoPlay = chatViewModel.autoPlay.value,
+                    onAutoPlayChange = { isChecked ->
+                        chatViewModel.toggleAutoPlay()
                     }
                 )
             },
@@ -86,11 +84,16 @@ fun ChatScreen() {
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    // 消息列表
                     LazyColumn(
                         modifier = Modifier.weight(1f),
                         reverseLayout = true
                     ) {
+                        if (chatViewModel.isGeneratingResponse.value) {
+                            item {
+                                GeneratingResponseIndicator()
+                            }
+                        }
+
                         items(chatViewModel.messages.reversed()) { message ->
                             MessageBubble(
                                 text = message.content,

@@ -6,14 +6,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.oralenglishgpt.database.entity.ConversationEntity
 import com.example.oralenglishgpt.database.entity.MessageEntity
+import com.example.oralenglishgpt.database.entity.SettingsEntity
 
 @Database(
-    entities = [ConversationEntity::class, MessageEntity::class],
-    version = 1,
+    entities = [ConversationEntity::class, MessageEntity::class, SettingsEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chatDao(): ChatDao
+    abstract fun settingsDao(): SettingsDao
 
     companion object {
         @Volatile
@@ -25,7 +27,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "chat_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
