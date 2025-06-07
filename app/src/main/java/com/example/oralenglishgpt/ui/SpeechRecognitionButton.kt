@@ -4,21 +4,21 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.example.oralenglishgpt.viewModel.stt.SpeechRecognitionViewModel
+import com.example.oralenglishgpt.viewModel.stt.STTViewModel
 
 @Composable
 fun SpeechRecognitionButton(
-    viewModel: SpeechRecognitionViewModel,
-    modifier: Modifier = Modifier
+    viewModel: STTViewModel,
+    modifier: Modifier = Modifier,
+    onStartListening: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val recognitionResult by viewModel.recognitionResult.collectAsState()
@@ -61,6 +61,7 @@ fun SpeechRecognitionButton(
                     context,
                     android.Manifest.permission.RECORD_AUDIO
                 ) == PackageManager.PERMISSION_GRANTED -> {
+                    onStartListening()
                     viewModel.startRecognition()
                 }
 
@@ -71,7 +72,12 @@ fun SpeechRecognitionButton(
             }
         },
         enabled = !isRecognizing,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth(),
+        border = BorderStroke(
+            width = 2.dp,
+            color = MaterialTheme.colorScheme.primary
+        )
     ) {
         if (isRecognizing) {
             CircularProgressIndicator(

@@ -1,4 +1,4 @@
-package com.example.oralenglishgpt.api
+package com.example.oralenglishgpt.gpt
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

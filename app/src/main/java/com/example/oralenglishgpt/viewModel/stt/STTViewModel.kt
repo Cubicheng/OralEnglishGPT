@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.oralenglishgpt.JsonParser
 import com.iflytek.cloud.*
 import com.iflytek.cloud.ui.RecognizerDialog
-import com.iflytek.cloud.ui.RecognizerDialogListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +17,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 
-class SpeechRecognitionViewModel : ViewModel() {
+class STTViewModel : ViewModel() {
     private val _recognitionResult = MutableStateFlow("")
     val recognitionResult: StateFlow<String> = _recognitionResult.asStateFlow()
 

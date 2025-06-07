@@ -5,30 +5,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.oralenglishgpt.database.AppDatabase
 import com.example.oralenglishgpt.viewModel.ChatViewModel
 import com.example.oralenglishgpt.viewModel.ChatViewModelFactory
-import com.example.oralenglishgpt.viewModel.stt.SpeechRecognitionViewModel
+import com.example.oralenglishgpt.viewModel.stt.STTViewModel
 import com.example.oralenglishgpt.viewModel.tts.TTSViewModel
 import com.example.oralenglishgpt.viewModel.tts.TTSViewModelFactory
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen() {
     val context = LocalContext.current
-    val sttViewModel: SpeechRecognitionViewModel = viewModel()
+    val sttViewModel: STTViewModel = viewModel()
     val chatViewModel: ChatViewModel = viewModel(
         factory = ChatViewModelFactory(context, AppDatabase.getDatabase(LocalContext.current))
     )
@@ -107,6 +102,7 @@ fun ChatScreen() {
 
                     InputArea(
                         sttViewModel = sttViewModel,
+                        ttsViewModel = ttsViewModel,
                         onSendMessage = { text ->
                             scope.launch {
                                 chatViewModel.sendMessage(text)

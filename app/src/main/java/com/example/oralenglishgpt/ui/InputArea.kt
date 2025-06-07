@@ -5,30 +5,29 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.oralenglishgpt.R
-import com.example.oralenglishgpt.viewModel.stt.SpeechRecognitionViewModel
+import com.example.oralenglishgpt.viewModel.stt.STTViewModel
+import com.example.oralenglishgpt.viewModel.tts.TTSViewModel
 
 @Composable
 fun InputArea(
-    sttViewModel: SpeechRecognitionViewModel,
+    sttViewModel: STTViewModel,
+    ttsViewModel: TTSViewModel,
     onSendMessage: (String) -> Unit
 ) {
-    var inputMode by remember { mutableStateOf(InputMode.KEYBOARD) }
+    var inputMode by remember { mutableStateOf(InputMode.VOICE) }
     var inputText by remember { mutableStateOf("") }
-    val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    LaunchedEffect(inputMode) {
-        if (inputMode == InputMode.KEYBOARD) {
-            focusRequester.requestFocus()
-            keyboardController?.show()
-        }
-    }
+//    val focusRequester = remember { FocusRequester() }
+//    val keyboardController = LocalSoftwareKeyboardController.current
+//
+//    LaunchedEffect(inputMode) {
+//        if (inputMode == InputMode.KEYBOARD) {
+//            focusRequester.requestFocus()
+//            keyboardController?.show()
+//        }
+//    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -64,8 +63,8 @@ fun InputArea(
                     value = inputText,
                     onValueChange = { inputText = it },
                     modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(focusRequester),
+                        .weight(1f),
+//                        .focusRequester(focusRequester),
                     placeholder = { Text("Input text...") },
                     shape = MaterialTheme.shapes.medium, // 使用主题中的中等圆角
                 )
@@ -75,6 +74,7 @@ fun InputArea(
                 IconButton(
                     onClick = {
                         if (inputText.isNotBlank()) {
+                            ttsViewModel.stop()
                             onSendMessage(inputText)
                             inputText = ""
                         }
@@ -92,7 +92,10 @@ fun InputArea(
             }
             InputMode.VOICE -> {
                 // 语音输入模式
-                SpeechRecognitionButton(viewModel = sttViewModel)
+                SpeechRecognitionButton(
+                    viewModel = sttViewModel,
+                    onStartListening = { ttsViewModel.stop() }
+                )
             }
         }
     }

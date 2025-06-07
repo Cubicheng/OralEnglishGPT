@@ -1,10 +1,9 @@
-package com.example.oralenglishgpt.api
+package com.example.oralenglishgpt.gpt
 
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import java.time.Instant
 
 interface ZhipuAIApi {
     @Headers("Content-Type: application/json")

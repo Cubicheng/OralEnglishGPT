@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.oralenglishgpt.api.Conversation
+import com.example.oralenglishgpt.gpt.Conversation
 import com.example.oralenglishgpt.viewModel.ChatViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,13 +70,18 @@ fun ConversationHistoryDrawer(
             onClick = onNewConversation,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("New Conversation")
+            Text(
+                "New Chat",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // 历史对话列表
         Text("History", style = MaterialTheme.typography.titleMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
             items(conversations) { conversation ->
