@@ -1,5 +1,6 @@
 package com.example.oralenglishgpt.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,7 +54,9 @@ fun MessageBubble(
 
         if (!isUser) {
             IconButton(
-                onClick = { ttsViewModel.togglePlayback(text) },
+                onClick = {
+                    ttsViewModel.togglePlayback(text)
+                },
             ) {
                 Icon(
                     painter = painterResource(

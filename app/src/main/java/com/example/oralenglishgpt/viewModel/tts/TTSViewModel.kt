@@ -3,6 +3,7 @@ package com.example.oralenglishgpt.viewModel.tts
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,6 +29,7 @@ class TTSViewModel(context: Context) : ViewModel() {
                         isPlaying = false
                     }
 
+                    @Deprecated("Deprecated in Java", ReplaceWith("isPlaying = false"))
                     override fun onError(utteranceId: String?) {
                         isPlaying = false
                     }
