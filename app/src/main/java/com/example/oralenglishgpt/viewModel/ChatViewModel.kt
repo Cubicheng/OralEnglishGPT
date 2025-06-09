@@ -227,9 +227,25 @@ class ChatViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                val messagesToSend = buildList {
+                    add(Message(
+                        role = "system",
+                        content = """
+                    You are an English speaking coach. Your task is to help users improve their oral English skills.
+                    Please follow these guidelines:
+                    1. Respond naturally in English, as a native speaker would in daily conversation
+                    2. Keep your responses concise (1-2 sentences)
+                    3. Gently correct major grammatical errors in the user's input by rephrasing correctly
+                    4. Occasionally ask follow-up questions to encourage conversation
+                    5. Use simple vocabulary suitable for English learners
+                    """.trimIndent()
+                    ))
+                    addAll(_messages)
+                }
+
                 val response = api.chatCompletion(
                     auth = apiKey,
-                    request = ChatRequest(messages = _messages.toList())
+                    request = ChatRequest(messages = messagesToSend)
                 )
 
                 val aiMessage = response.choices.first().message
