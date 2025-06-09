@@ -7,7 +7,7 @@ import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.oralenglishgpt.JsonParser
+import com.example.oralenglishgpt.utils.JsonParser
 import com.iflytek.cloud.*
 import com.iflytek.cloud.ui.RecognizerDialog
 import kotlinx.coroutines.flow.MutableStateFlow

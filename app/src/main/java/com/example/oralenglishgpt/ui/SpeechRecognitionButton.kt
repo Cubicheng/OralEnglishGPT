@@ -12,18 +12,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.oralenglishgpt.utils.NetworkUtils
 import com.example.oralenglishgpt.viewModel.stt.STTViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun SpeechRecognitionButton(
     viewModel: STTViewModel,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState,
     onStartListening: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val recognitionResult by viewModel.recognitionResult.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isRecognizing by viewModel.isRecognizing.collectAsState()
+    val scope = rememberCoroutineScope()
 
     // 权限请求相关
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -56,18 +60,24 @@ fun SpeechRecognitionButton(
     // 识别按钮
     Button(
         onClick = {
-            when {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    android.Manifest.permission.RECORD_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    onStartListening()
-                    viewModel.startRecognition()
+            scope.launch {
+                if (!NetworkUtils.isNetworkAvailable(context)) {
+                    NetworkUtils.showNetworkErrorSnackbar(context, snackbarHostState)
+                    return@launch
                 }
 
-                else -> {
-                    Log.d("STT", "录音权限被拒绝")
-                    permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                when {
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.RECORD_AUDIO
+                    ) == PackageManager.PERMISSION_GRANTED -> {
+                        onStartListening()
+                        viewModel.startRecognition()
+                    }
+                    else -> {
+                        Log.d("STT", "录音权限被拒绝")
+                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                    }
                 }
             }
         },

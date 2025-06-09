@@ -5,16 +5,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.oralenglishgpt.R
+import com.example.oralenglishgpt.utils.NetworkUtils
 import com.example.oralenglishgpt.viewModel.stt.STTViewModel
 import com.example.oralenglishgpt.viewModel.tts.TTSViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun InputArea(
     sttViewModel: STTViewModel,
     ttsViewModel: TTSViewModel,
+    snackbarHostState: SnackbarHostState,
     onSendMessage: (String) -> Unit
 ) {
     var inputMode by remember { mutableStateOf(InputMode.VOICE) }
@@ -28,6 +32,8 @@ fun InputArea(
 //            keyboardController?.show()
 //        }
 //    }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -73,10 +79,16 @@ fun InputArea(
 
                 IconButton(
                     onClick = {
-                        if (inputText.isNotBlank()) {
-                            ttsViewModel.stop()
-                            onSendMessage(inputText)
-                            inputText = ""
+                        scope.launch {
+                            if (!NetworkUtils.isNetworkAvailable(context)) {
+                                NetworkUtils.showNetworkErrorSnackbar(context, snackbarHostState)
+                                return@launch
+                            }
+                            if (inputText.isNotBlank()) {
+                                ttsViewModel.stop()
+                                onSendMessage(inputText)
+                                inputText = ""
+                            }
                         }
                     }
                 ) {
@@ -94,7 +106,8 @@ fun InputArea(
                 // 语音输入模式
                 SpeechRecognitionButton(
                     viewModel = sttViewModel,
-                    onStartListening = { ttsViewModel.stop() }
+                    onStartListening = { ttsViewModel.stop() },
+                    snackbarHostState = snackbarHostState
                 )
             }
         }

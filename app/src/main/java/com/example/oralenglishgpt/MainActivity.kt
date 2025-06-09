@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity() {
             MainTheme {
                 Surface {
                     ChatScreen()
-//                    SpeechRecognitionScreen();
                 }
             }
         }

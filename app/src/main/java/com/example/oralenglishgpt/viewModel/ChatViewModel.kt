@@ -232,10 +232,8 @@ class ChatViewModel(
                     request = ChatRequest(messages = _messages.toList())
                 )
 
-                // 修复1：直接访问响应体（非Response包装）
                 val aiMessage = response.choices.first().message
 
-                // 修复2：线程安全更新UI
                 withContext(Dispatchers.Main) {
                     _messages.add(aiMessage)
                     Log.d("ChatVM", "AI回复: ${aiMessage.content}")

@@ -1,5 +1,6 @@
 package com.example.oralenglishgpt.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +11,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.oralenglishgpt.database.AppDatabase
+import com.example.oralenglishgpt.utils.NetworkUtils
+import com.example.oralenglishgpt.utils.NetworkUtils.isNetworkAvailable
 import com.example.oralenglishgpt.viewModel.ChatViewModel
 import com.example.oralenglishgpt.viewModel.ChatViewModelFactory
 import com.example.oralenglishgpt.viewModel.stt.STTViewModel
@@ -30,8 +33,8 @@ fun ChatScreen() {
     )
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // 设置语音识别后的发送逻辑
     sttViewModel.onSendMessage = { recognizedText ->
         scope.launch {
             if (recognizedText.isNotBlank()) {
@@ -42,6 +45,10 @@ fun ChatScreen() {
 
     LaunchedEffect(ttsViewModel) {
         chatViewModel.ttsViewModel = ttsViewModel
+    }
+
+    LaunchedEffect(Unit) {
+        NetworkUtils.showNetworkErrorSnackbar(context, snackbarHostState)
     }
 
     ModalNavigationDrawer(
@@ -77,6 +84,9 @@ fun ChatScreen() {
                     }
                 )
             },
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
+            },
             content = { padding ->
                 Column(
                     modifier = Modifier
@@ -110,7 +120,8 @@ fun ChatScreen() {
                             scope.launch {
                                 chatViewModel.sendMessage(text)
                             }
-                        }
+                        },
+                        snackbarHostState = snackbarHostState
                     )
                 }
             }

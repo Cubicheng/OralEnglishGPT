@@ -1,4 +1,4 @@
-package com.example.oralenglishgpt
+package com.example.oralenglishgpt.utils
 
 import org.json.JSONException
 import org.json.JSONObject
