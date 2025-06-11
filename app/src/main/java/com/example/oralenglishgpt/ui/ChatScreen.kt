@@ -1,9 +1,9 @@
 package com.example.oralenglishgpt.ui
 
-import android.util.Log
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.oralenglishgpt.database.AppDatabase
 import com.example.oralenglishgpt.utils.NetworkUtils
-import com.example.oralenglishgpt.utils.NetworkUtils.isNetworkAvailable
 import com.example.oralenglishgpt.viewModel.ChatViewModel
 import com.example.oralenglishgpt.viewModel.ChatViewModelFactory
 import com.example.oralenglishgpt.viewModel.stt.STTViewModel
@@ -20,6 +19,7 @@ import com.example.oralenglishgpt.viewModel.tts.TTSViewModel
 import com.example.oralenglishgpt.viewModel.tts.TTSViewModelFactory
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen() {
@@ -104,11 +104,23 @@ fun ChatScreen() {
                             }
                         }
 
-                        items(chatViewModel.messages.reversed()) { message ->
+                        itemsIndexed(chatViewModel.messages.reversed()) { index, message ->
+                            val isPlaying by derivedStateOf {
+                                ttsViewModel.currentPlayingIndex == index && ttsViewModel.isPlaying
+                            }
+
                             MessageBubble(
                                 text = message.content,
                                 isUser = message.role == "user",
-                                ttsViewModel = ttsViewModel
+                                ttsViewModel = ttsViewModel,
+                                isPlaying = isPlaying,
+                                onPlayToggle = {
+                                    if (isPlaying) {
+                                        ttsViewModel.stop()
+                                    } else {
+                                        ttsViewModel.playText(message.content, index)
+                                    }
+                                },
                             )
                         }
                     }

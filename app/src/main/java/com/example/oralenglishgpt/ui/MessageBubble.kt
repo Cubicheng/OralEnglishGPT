@@ -1,6 +1,5 @@
 package com.example.oralenglishgpt.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +23,9 @@ import com.example.oralenglishgpt.viewModel.tts.TTSViewModel
 fun MessageBubble(
     text: String,
     isUser: Boolean,
-    ttsViewModel: TTSViewModel // 新增参数
+    ttsViewModel: TTSViewModel,
+    isPlaying: Boolean,
+    onPlayToggle: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -54,13 +55,11 @@ fun MessageBubble(
 
         if (!isUser) {
             IconButton(
-                onClick = {
-                    ttsViewModel.togglePlayback(text)
-                },
+                onClick = onPlayToggle
             ) {
                 Icon(
                     painter = painterResource(
-                        id = if (ttsViewModel.isPlaying)
+                        id = if (isPlaying)
                             R.drawable.pause_circle
                         else
                             R.drawable.sound_filling

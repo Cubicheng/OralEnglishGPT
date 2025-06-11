@@ -260,7 +260,7 @@ class ChatViewModel(
 
                     // 自动播放逻辑
                     if (autoPlay.value) {
-                        ttsViewModel?.speak(aiMessage.content)
+                        ttsViewModel?.playText(aiMessage.content,0)
                     }
                 }
 

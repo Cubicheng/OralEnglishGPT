@@ -3,7 +3,6 @@ package com.example.oralenglishgpt.viewModel.tts
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,6 +13,8 @@ class TTSViewModel(context: Context) : ViewModel() {
     private var tts: TextToSpeech? = null
     var isTTSReady = false
     var isPlaying by mutableStateOf(false)
+
+    var currentPlayingIndex: Int? by mutableStateOf(null)
 
     init {
         tts = TextToSpeech(context) { status ->
@@ -38,17 +39,16 @@ class TTSViewModel(context: Context) : ViewModel() {
         }
     }
 
-    fun togglePlayback(text: String) {
-        if (isPlaying) {
-            stop()
-        } else {
-            speak(text)
-        }
+    fun playText(text: String, index:Int) {
+        currentPlayingIndex = index
+        isPlaying = true
+        speak(text)
     }
 
     fun stop() {
-        tts?.stop()
+        currentPlayingIndex = null
         isPlaying = false
+        tts?.stop()
     }
 
     fun speak(text: String) {
