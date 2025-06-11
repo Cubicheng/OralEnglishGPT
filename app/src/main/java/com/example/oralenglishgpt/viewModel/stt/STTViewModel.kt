@@ -38,7 +38,6 @@ class STTViewModel : ViewModel() {
     private val language = "zh_cn" // 识别语言
     private val resultType = "json" // 结果内容数据格式
 
-    // 新增回调，用于在识别完成后发送消息
     var onSendMessage: ((String) -> Unit)? = null
 
     // 初始化监听器

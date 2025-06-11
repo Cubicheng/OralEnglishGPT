@@ -30,24 +30,24 @@ fun ChatTopBar(
             }
         },
         actions = {
-            // AutoPlay 开关 - 调整大小和间距
+            // AutoPlay 开关
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 8.dp) // 左侧16dp间距，右侧8dp
+                    .padding(start = 16.dp, end = 8.dp)
                     .widthIn(min = 100.dp) // 最小宽度
             ) {
                 Text(
                     text = "AutoPlay",
                     style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.padding(end = 8.dp) // 文本和开关间距
+                    modifier = Modifier.padding(end = 8.dp)
                 )
                 Switch(
                     checked = autoPlay,
                     onCheckedChange = onAutoPlayChange,
                     modifier = Modifier
-                        .size(32.dp) // 缩小开关整体大小
-                        .scale(0.8f)  // 进一步缩小开关内部元素
+                        .size(32.dp)
+                        .scale(0.8f)
                 )
             }
         }

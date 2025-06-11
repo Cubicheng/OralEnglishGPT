@@ -35,7 +35,7 @@ fun MessageBubble(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Card(
-            modifier = Modifier.fillMaxWidth(0.9f), // 限制卡片宽度（留白更美观）
+            modifier = Modifier.fillMaxWidth(0.9f),
             colors = CardDefaults.cardColors(
                 containerColor = if (isUser)
                     MaterialTheme.colorScheme.primaryContainer

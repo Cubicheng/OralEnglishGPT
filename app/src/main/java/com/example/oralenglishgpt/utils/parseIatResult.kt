@@ -4,9 +4,6 @@ import org.json.JSONException
 import org.json.JSONObject
 
 object JsonParser {
-    /**
-     * 解析语音听写结果
-     */
     fun parseIatResult(json: String?): String {
         val result = StringBuilder()
         try {
