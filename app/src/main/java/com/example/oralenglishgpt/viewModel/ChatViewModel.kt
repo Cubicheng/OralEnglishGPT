@@ -55,6 +55,8 @@ class ChatViewModel(
 
     val autoPlay = mutableStateOf(false)
 
+    var lastModified: Long = System.currentTimeMillis()
+
     init{
         loadAllConversationsAndSettings()
     }
@@ -140,7 +142,6 @@ class ChatViewModel(
         val existingIndex = _conversations.indexOfFirst { it.id == currentConversationId }
 
         val title = generateConversationTitle(_messages)
-        val lastModified = System.currentTimeMillis()
 
         // 数据库操作
         chatDao.insertConversation(
@@ -180,7 +181,7 @@ class ChatViewModel(
             Log.d("ChatVM", "新增历史对话: ${currentConversation.title}")
         }
 
-        _conversations.sortBy { it.lastModified }
+        _conversations.sortByDescending { it.lastModified }
     }
 
     private fun generateConversationTitle(messages: List<Message>): String {
@@ -249,6 +250,8 @@ class ChatViewModel(
                 )
 
                 val aiMessage = response.choices.first().message
+
+                lastModified = System.currentTimeMillis()
 
                 withContext(Dispatchers.Main) {
                     _messages.add(aiMessage)
