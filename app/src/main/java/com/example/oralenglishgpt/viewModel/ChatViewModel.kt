@@ -216,12 +216,7 @@ class ChatViewModel(
     }
 
     suspend fun sendMessage(text: String) {
-        // 添加用户消息
-        if (_messages.size >= 6) {  // 保留最近3轮（user+assistant各一条）
-            _messages.removeRange(0, 2)  // 删除最旧的一对QA
-        }
         _messages.add(Message("user", text))
-
         saveCurrentConversation()
 
         _isGeneratingResponse.value = true
@@ -241,7 +236,14 @@ class ChatViewModel(
                     5. Use simple vocabulary suitable for English learners
                     """.trimIndent()
                     ))
-                    addAll(_messages)
+
+                    //只添加最近三轮对话
+                    val recentMessages = if (_messages.size > 6) {
+                        _messages.takeLast(6)
+                    } else {
+                        _messages
+                    }
+                    addAll(recentMessages)
                 }
 
                 val response = api.chatCompletion(
@@ -250,7 +252,6 @@ class ChatViewModel(
                 )
 
                 val aiMessage = response.choices.first().message
-
                 lastModified = System.currentTimeMillis()
 
                 withContext(Dispatchers.Main) {
@@ -260,7 +261,7 @@ class ChatViewModel(
 
                     // 自动播放逻辑
                     if (autoPlay.value) {
-                        ttsViewModel?.playText(aiMessage.content,0)
+                        ttsViewModel?.playText(aiMessage.content, 0)
                     }
                 }
 
@@ -270,7 +271,7 @@ class ChatViewModel(
                     saveCurrentConversation()
                 }
                 Log.e("API", "网络错误: ${e.message}")
-            }finally {
+            } finally {
                 withContext(Dispatchers.Main) {
                     _isGeneratingResponse.value = false
                 }
