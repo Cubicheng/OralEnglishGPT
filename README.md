@@ -2,7 +2,7 @@
 
 <center>OralEnglishGPT</center>
 
-OralEnglishGPT 是一款类大模型客户端的 app，旨在帮助进行用户英语口语的练习。
+OralEnglishGPT 是一款类大模型客户端的 app，旨在帮助用户进行英语口语和听力的练习。
 
 Github仓库地址：https://github.com/Cubicheng/OralEnglishGPT
 
